@@ -57,4 +57,5 @@ windows:
         # - guard
         - rails console
   - server: bundle exec rails s
-  - logs: tail -f log/development.log
+  - guard: bundle exec guard
+  # - logs: tail -f log/development.log
