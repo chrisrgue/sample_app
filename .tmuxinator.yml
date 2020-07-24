@@ -53,9 +53,10 @@ windows:
       # 'before' represents legacy functionality and will be deprecated in a future release, in favour of 'after'
       # synchronize: after
       panes:
-        - vim
+        # - vim
+        - edit_last_session
         # - guard
         - rails console
-  - server: bundle exec rails s
+  - server: bundle exec rails s -b 0.0.0.0
   - guard: bundle exec guard
   # - logs: tail -f log/development.log
