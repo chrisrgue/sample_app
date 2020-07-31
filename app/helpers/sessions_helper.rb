@@ -4,13 +4,25 @@ module SessionsHelper
     session[:user_id] = user.id
   end
 
+  # Remembers a user in a persistent session.
+  def remember(user)
+    user.remember
+    cookies.permanent.signed[:user_id] = user.id
+    cookies.permanent[:remember_token] = user.remember_token
+  end
+
+  # Returns the user corresponding to the remember token cookie.
   def current_user
-    if session[:user_id]
-      @current_user ||= User.find_by id: session[:user_id]
-      # Using find_by which returns nil if the obtained user_id is invalid
-      # ('find(session[:user_id])' wuld throw an exception in this case
-      # which we dont want because this helper might often be called in a context
-      # where a user hasn't yet logged in)
+    if (user_id = session[:user_id])
+      @current_user ||= User.find_by(id: user_id)
+    elsif (user_id = cookies.signed[:user_id])
+      # raise # The tests still pass, so this branch is currently untested.
+      user = User.find_by(id: user_id)
+      if user && user.authenticated?(cookies[:remember_token])
+        puts "----- WELCOME BACK #{user.name} -------"
+        log_in user
+        @current_user = user
+      end
     end
   end
 
@@ -18,8 +30,18 @@ module SessionsHelper
     !current_user.nil?
   end
 
+  # Forgets a persistent session.
+  def forget(user)
+    user.forget
+    cookies.delete(:user_id)
+    cookies.delete(:remember_token)
+  end
+
+  # Logs out the current user.
   def log_out
+    forget(current_user)
     session.delete(:user_id)
     @current_user = nil
   end
+
 end
